@@ -1,0 +1,102 @@
+using System;
+
+class Program
+{
+    static void Main()
+    {
+        // Parâmetros iniciais
+        double caixaPrefeitura = 0;
+        double caixaComercio = 10000000;
+        double caixaIndustria = 50000000;
+
+        const int populacaoAtiva = 1000;
+        const int empregadosPrefeitura = 125;
+        const int empregadosComercio = 200;
+        const int empregadosIndustria = 675;
+        const int beneficiariosSociais = 55;
+
+        const double salarioPrefeitura = 20000;
+        const double salarioComercio = 7500;
+        const double salarioIndustria = 10000;
+        const double beneficioSocial = 1000;
+
+        const double impostoSalarioEmpresa = 0.61;
+        const double impostoSalarioTrabalhador = 0.25;
+        const double impostoVendaComercio = 0.38;
+        const double impostoVendaIndustria = 0.18;
+
+        const double custoProducaoIndustria = 42.75;
+        const double precoVendaIndustria = 75;
+        const double precoVendaComercio = 203;
+        const int consumoMensal = populacaoAtiva;
+
+        int anos = 0;
+
+        while (true)
+        {
+            double impostosAnuaisComercio = 0, impostosAnuaisIndustria = 0, impostosAnuaisPopulacao = 0;
+            
+            for (int mes = 1; mes <= 12; mes++)
+            {
+                // Pagamento de salários e arrecadação de impostos
+                double folhaPrefeitura = empregadosPrefeitura * salarioPrefeitura;
+                double folhaComercio = empregadosComercio * salarioComercio;
+                double folhaIndustria = empregadosIndustria * salarioIndustria;
+                double beneficiosSociais = beneficiariosSociais * beneficioSocial;
+                
+                double impostoPrefeitura = folhaPrefeitura * impostoSalarioEmpresa;
+                double impostoComercio = folhaComercio * impostoSalarioEmpresa;
+                double impostoIndustria = folhaIndustria * impostoSalarioEmpresa;
+                
+                double impostoTrabalhadores = (folhaPrefeitura + folhaComercio + folhaIndustria) * impostoSalarioTrabalhador;
+
+                impostosAnuaisComercio += impostoComercio;
+                impostosAnuaisIndustria += impostoIndustria;
+                impostosAnuaisPopulacao += impostoTrabalhadores;
+
+                caixaPrefeitura += impostoPrefeitura + impostoComercio + impostoIndustria + impostoTrabalhadores;
+                caixaComercio -= folhaComercio + impostoComercio;
+                caixaIndustria -= folhaIndustria + impostoIndustria;
+
+                // Pagamento de benefícios sociais
+                caixaPrefeitura -= beneficiosSociais;
+
+                // Consumo no comércio
+                double receitaComercio = populacaoAtiva * precoVendaComercio;
+                double impostoVenda = receitaComercio * impostoVendaComercio;
+                caixaComercio += receitaComercio - impostoVenda;
+                caixaPrefeitura += impostoVenda;
+                impostosAnuaisComercio += impostoVenda;
+
+                // Comércio repõe estoque comprando da indústria
+                double custoReposicao = consumoMensal * precoVendaIndustria;
+                double impostoIndustriaVenda = custoReposicao * impostoVendaIndustria;
+                
+                if (caixaComercio < custoReposicao) break; // Comércio não consegue repor estoque
+                
+                caixaComercio -= custoReposicao;
+                caixaIndustria += custoReposicao - impostoIndustriaVenda;
+                caixaPrefeitura += impostoIndustriaVenda;
+                impostosAnuaisIndustria += impostoIndustriaVenda;
+
+                // Indústria produz novos produtos
+                double custoProducao = consumoMensal * custoProducaoIndustria;
+                if (caixaIndustria < custoProducao) break; // Indústria sem caixa para operar
+                caixaIndustria -= custoProducao;
+            }
+
+            anos++;
+            Console.WriteLine($"Ano {anos} encerrado:");
+            Console.WriteLine($"  Caixa Prefeitura: R$ {caixaPrefeitura:F2}");
+            Console.WriteLine($"  Caixa Comércio: R$ {caixaComercio:F2}");
+            Console.WriteLine($"  Caixa Indústria: R$ {caixaIndustria:F2}");
+            Console.WriteLine($"  Impostos anuais - Comércio: R$ {impostosAnuaisComercio:F2}, Indústria: R$ {impostosAnuaisIndustria:F2}, População: R$ {impostosAnuaisPopulacao:F2}");
+
+            if (caixaIndustria < 0 || caixaComercio < precoVendaIndustria * consumoMensal)
+            {
+                Console.WriteLine("A economia entrou em colapso. Simulação encerrada.");
+                break;
+            }
+        }
+    }
+}
